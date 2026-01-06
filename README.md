@@ -2,8 +2,10 @@
 
 A lightweight, terminal-based Database Management System (DBMS) built entirely using **Bash Scripting**. This project simulates a relational database environment where you can manage databases and tables through a command-line interface.
 
-## 🚀 Features
+## 🛠️ How it Works
+- Run ./main to start.
 
+## 🚀 Features
 - **Database Management**: Create, List, and Drop databases.
 - **Table Management**:
   - Create tables with specific schemas (Columns & Data Types).
@@ -19,11 +21,12 @@ A lightweight, terminal-based Database Management System (DBMS) built entirely u
 
 ## 📁 Project Structure
 Bash-DBMS/
-├── main               # الملف الرئيسي (مدير قواعد البيانات)
-├── controlDB          # ملف التحكم في الجداول (بيشتغل بعد الـ Connect)
-├── databases/         # المجلد الرئيسي لتخزين البيانات
-│   ├── DB1/           # مجلد لكل قاعدة بيانات بتكريتها
-│   │   ├── Table1     # ملفات الجداول (Data)
-│   │   └── Table2
-│   └── DB2/
-└── README.md
+|── main       # السكريبت الرئيسى اللى هتشغله عشان يوصلك للمينو
+|── controlDB  # سكريبت بيستدعيه الmain تلقائيا عند اختياؤ "connect to database"
+|── databases/ # المسار اللى هتتخزن فيه الdatabases
+|   |── DB1/
+|   |  |── table1 
+|   |  |── table2 
+|   |── DB2/
+|── README.md  
+
