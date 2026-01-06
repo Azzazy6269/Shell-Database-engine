@@ -1,0 +1,173 @@
+#!/bin/bash
+
+echo "Controlling Database $dbName"
+
+function createTable {
+        echo "Creating Table..."
+        read -p "Enter table name : " tname
+        if [ -f ./databases/$dbName/$tname ]; then
+                echo "$tname is already exist"
+        else
+            	touch ./databases/$dbName/$tname
+                header=""
+                pk=""
+                read -p "Enter number of columns : " ncolumns
+                for ((i=0;i<$ncolumns;i++))
+                 do
+                   	read -p "Enter column ${i+1} name : " cname
+                        while true; do
+                        echo -e "Enter data type\n1 - int\n2 - string  " 
+                        read ctype 
+                        if [ $ctype -eq 1 ]; then
+                                ctype="int" 
+                                break 
+                        elif [ $ctype -eq 2 ]; then
+                                ctype="string"
+                                break
+                        fi
+                        done
+                        header+="$cname:$ctype|"
+                done
+                read -p "write number of primary key column : " pk
+                echo -e "${header%|}\npk_col:${pk} " > "./databases/$dbName/$tname"
+                echo "Table $tname created successfully."
+        fi
+}
+
+function listTables {
+        echo "Listing Tables in $dbName:"
+        ls ./databases/$dbName
+}
+
+function dropTable {
+        echo "Dropping Table....."
+        read -p "Enter table name : " tname
+        if [ -f ./databases/$dbName/$tname ]; then
+                rm ./databases/$dbName/$tname
+        else
+                echo "There's no such table"
+        fi
+
+}
+
+function insertIntoTable {
+    echo "Inserting into Table....."
+    read -p "Enter Table Name: " tname
+    path="./databases/$dbName/$tname"
+    
+    if [ ! -f "$path" ]; then
+        echo "Table $tname does not exist."
+    else
+        header=$(head -n 1 "$path" | tr '|' ' ')
+        pk_row=$(sed -n '2p' "$path")
+        pk_index=$(echo $pk_row | cut -d':' -f2) 
+
+        new_row=""
+        count=1 
+        for col in $header; do
+            cname=$(echo $col | cut -d':' -f1)
+            ctype=$(echo $col | cut -d':' -f2)
+            while true; do
+                read -p "Enter value for $cname($ctype): " val
+                if [ $count -eq $pk_index ]; then
+                    if grep -q "^$val|" "$path" || grep -q "|$val|" "$path" || grep -q "|$val>
+                        echo "Primary Key already exists!"
+			continue
+                    fi
+                fi    
+                new_row+="$val|"
+                break
+            done
+            ((count++))
+        done
+        echo "${new_row%|}" >> "$path"
+    fi 
+}
+
+function selectFromTable {
+    echo "Selecting from table....."
+    read -p "Enter Table Name: " tname
+    path="./databases/$dbName/$tname"
+    if [ ! -f "$path" ]; then
+        echo "Table $tname does not exist."
+    else
+
+    else
+        echo "Table Columns:"
+        head -n 1 "$path"
+        read -p "select by column: " colNum
+        read -p "Enter value: " val
+        awk -F'|' -v col="$colNum" -v search="$val" '
+            NR==1 {print $0} 
+            NR>2 && $col==search {print $0}
+        ' "$path" | column -t -s '|'
+    fi
+}
+
+function deleteFromTable {
+    read -p "Enter Table Name: " tname
+    path="./databases/$dbName/$tname"
+    if [ ! -f "$path" ]; then
+        echo "Table $tname does not exist."
+    else
+        echo "Columns in $tname:"
+        head -n 1 "$path"
+        read -p "Enter column number to search by: " colNum
+        read -p "Enter value to delete: " val
+        lineNum=$(awk -F'|' -v col="$colNum" -v search="$val" 'NR>2 && $col==search {print NR>
+        if [ -z "$lineNum" ]; then
+            echo "Value not found"
+        else
+            sed -i "${lineNum}d" "$path"
+        fi
+    fi
+}
+
+function updateTable {
+    read -p "Enter Table Name: " tname
+    path="./databases/$dbName/$tname"
+
+    if [ ! -f "$path" ]; then
+        echo "Table $tname does not exist."
+    else
+        read -p "Search Column Number: " sCol
+        read -p "Value to search for: " sVal
+        read -p "Column Number to UPDATE: " uCol
+        read -p "Enter New Value: " newVal
+        awk -F'|' -v sc="$sCol" -v sv="$sVal" -v uc="$uCol" -v nv="$newVal" '
+            BEGIN { OFS="|" }
+            {
+             	if (NR > 2 && $sc == sv) {
+                    $uc = nv
+                }
+                print $0
+            }
+	' "$path" > "$path.tmp" && mv "$path.tmp" "$path"
+
+        echo "Update operation finished."
+    fi
+}
+
+while true; do
+    echo "1- Create Table"
+    echo "2- List Tables"
+    echo "3- Drop Table"
+    echo "4- Insert into Table"
+    echo "5- Select From Table"
+    echo "6- Delete From Table"
+    echo "7- Update Table"
+    echo "8- Back to Main Menu"
+    
+    read -p "Select an option: " choice
+    case $choice in
+        1) createTable ;;
+        2) listTables ;;
+        3) dropTable ;;
+        4) insertIntoTable ;;
+        5) selectFromTable ;;
+        6) deleteFromTable ;;
+        7) updateTable ;;
+        8) exit ;;
+        *) echo "Invalid choice" ;;
+    esac
+done

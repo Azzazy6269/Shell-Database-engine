@@ -1,0 +1,57 @@
+#!/bin/bash
+
+function create_DB {
+        echo "Creating database..... "
+        read -p "Enter database name : " dbName
+        if [ -d "./databases/$dbName" ]; then
+                echo "$dbName already exist"
+        else
+            	mkdir "./databases/$dbName"
+                echo "$dbName created successfully"
+        fi
+}
+
+function list_DBs {
+        echo "Listing databases....."
+        ls ./databases
+}
+
+function connect_to_DB {
+        echo "Connect to database....."
+        read -p "Enter database name : " dbName
+         if [ -d "./databases/$dbName" ]; then
+                export dbName
+                ./controlDB
+        else
+            	echo "$dbName doesn't exist"
+        fi
+
+}
+
+function drop_DB {
+        echo "Dropping database....."
+        read -p "Enter database name : " dbName 
+        if [ -d "./databases/$dbName" ]; then
+                rm -r ./databases/$dbName
+        else
+            	echo "$dbName doesn't exist"
+        fi
+
+
+}
+while true; do
+echo "1- Create Database"
+echo "2- List Databases"
+echo "3- Connect To Database"
+echo "4- Drop Database"
+echo "5- Exit"
+read -p "Select an option : " choice
+case $choice in
+1) create_DB ;;
+2) list_DBs ;;
+3) connect_to_DB ;;
+4) drop_DB ;;
+5) exit ;;
+*) echo "Invalid choice";;
+esac
+done
